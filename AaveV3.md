@@ -124,7 +124,7 @@ event Transfer(
 ```
 
 
-#### `ReserveUsedAsCollateralEnabled` (only on first supply):
+#### `ReserveUsedAsCollateralEnabled` (only on first supply)
 
 Triggered in: `ValidationLogic.sol (validateUseAsCollateral)`
 
@@ -136,7 +136,7 @@ event ReserveUsedAsCollateralEnabled(
 ```
 
 
-#### `ReserveDataUpdated`:
+#### `ReserveDataUpdated`
 
 Triggered in: `ReserveLogic.sol (updateInterestRates)`
 
