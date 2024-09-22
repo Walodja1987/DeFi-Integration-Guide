@@ -11,8 +11,29 @@ The [Pool contract](https://github.com/aave-dao/aave-v3-origin/blob/main/src/cor
 * flashLoan (TODO)
 
 ## Links
-* Github: https://github.com/aave-dao/aave-v3-origin
-* Docs: https://docs.aave.com/developers
+* Contracts: https://github.com/aave-dao/aave-v3-origin
+* Developer docs: https://docs.aave.com/developers
+
+## Key terminology
+
+### Frozen reserve
+- Does not allow new supply, borrow, or rate switch (variable/stable) operations.
+- Does allow repay, withdraw, liquidations, and interest accrual (stable rate rebalances).
+
+### Paused reserve
+- Does not allow any protocol interaction for the asset being supplied, including supply, borrow, repay, withdraw, rate switch (variable/stable), liquidation, and aToken transfer.
+
+### Enabled as collateral
+- Enabling a supplied asset as collateral means that the asset can be used as collateral for borrowing.
+
+### Isolated asset
+An isolated asset in the Aave protocol refers to an asset that has been configured with special restrictions to limit its potential risk to the overall system. The decision to make an asset isolated, as well as setting its specific parameters (like debt ceiling), is controlled by Aave governance. Here are the key characteristics of an isolated asset:
+
+- **Limited borrowing**: Users can only borrow stablecoins that have been specifically configured by Aave governance to be borrowable when using an isolated asset as collateral.
+- **Debt ceiling**: There is a maximum amount (debt ceiling) that can be borrowed against isolated collateral, expressed in USD.
+- **Single collateral usage**: When a user supplies an isolated asset as collateral, they cannot use any other assets as collateral simultaneously. The isolated asset must be the only collateral for that user's position.
+- **Restricted as collateral**: Other non-isolated assets cannot be used as collateral if a user has an isolated asset enabled as collateral.
+- **Isolation mode**: When a user enables an isolated asset as collateral, they enter "isolation mode", which applies these special restrictions to their account.
 
 
 ## `supply`
@@ -72,13 +93,6 @@ Pool.sol (supply)
 * Mint the corresponding amount of aTokens to the user.
 * If the asset is supplied for the first time, confirm that it can be automatically enabled as collateral (isolated assets are not enabled as collateral automatically). If yes, reflect it in the user's bitmap configuration accordingly.
 
->**Frozen reserve:**
-> * Does not allow new supply, borrow, or rate switch (variable/stable) operations.
-> * Does allow repay, withdraw, liquidations, and interest accrual (stable rate rebalances).
-
->**Paused reserve:**
-> * Does not allow any protocol interaction for the asset being supplied, including supply, borrow, repay, withdraw, rate switch (variable/stable), liquidation, and aToken transfer.
-
 
 ### Revert conditions
 
@@ -102,6 +116,84 @@ Pool.sol (supply)
 
 The following events are emitted, listed in the order of occurrence:
 
+#### `ReserveDataUpdated`
+
+Triggered in: `ReserveLogic.sol (updateInterestRatesAndVirtualBalance)`
+
+```solidity
+event ReserveDataUpdated(
+    address indexed reserve,
+    uint256 liquidityRate,
+    uint256 stableBorrowRate,
+    uint256 variableBorrowRate,
+    uint256 liquidityIndex,
+    uint256 variableBorrowIndex
+);
+```
+
+#### `Transfer`
+
+Triggered in: `ERC20.sol of supplied asset (safeTransferFrom)`
+
+```solidity
+event Transfer(
+    address indexed from,
+    address indexed to,
+    uint256 value
+);
+```
+
+### `Approval`
+
+Triggered in: `ERC20.sol of supplied asset (safeTransferFrom)`
+
+```solidity
+event Approval(
+    address indexed owner,
+    address indexed spender,
+    uint256 value
+);
+```	
+
+#### `Transfer`
+
+Triggered in: `ScaledBalanceTokenBase.sol (_mintScaled)`
+
+```solidity
+event Transfer(
+    address indexed from,
+    address indexed to,
+    uint256 value
+);
+```
+
+#### `Mint`
+
+Triggered in: `ScaledBalanceTokenBase.sol (_mintScaled)`
+
+```solidity
+event Mint(
+    address indexed caller,
+    address indexed onBehalfOf,
+    uint256 value,
+    uint256 balanceIncrease,
+    uint256 index
+);
+```
+
+#### `ReserveUsedAsCollateralEnabled`
+
+Trigger condition: only on first supply and if the supplied asset can be enabled as collateral.
+
+Triggered in: `SupplyLogic.sol (executeSupply)`
+
+```solidity
+event ReserveUsedAsCollateralEnabled(
+    address indexed reserve,
+    address indexed user
+);
+```
+
 #### `Supply`
 
 Triggered in: `SupplyLogic.sol (executeSupply)`
@@ -116,78 +208,7 @@ event Supply(
 );
 ```
 
-
-#### `Transfer`
-
-Triggered in: `ERC20.sol of supplied asset (safeTransferFrom)`
-
-```solidity
-event Transfer(
-    address indexed from,
-    address indexed to,
-    uint256 value
-);
-```
-
-
-#### `Mint`
-
-Triggered in: `ScaledBalanceTokenBase.sol (_mintScaled)`
-
-```solidity
-event Mint(
-    address indexed caller,
-    address indexed onBehalfOf,
-    uint256 amount,
-    uint256 index
-);
-```
-
-
-#### `Transfer`
-
-Triggered in: `ScaledBalanceTokenBase.sol (_mintScaled)`
-
-```solidity
-event Transfer(
-    address indexed from,
-    address indexed to,
-    uint256 value
-);
-```
-
-
-#### `ReserveUsedAsCollateralEnabled`
-
-Trigger condition: only on first supply and if the supplied asset can be enabled as collateral (i.e. it's not an isolated asset).
-
-Triggered in: `SupplyLogic.sol (executeSupply)`
-
-```solidity
-event ReserveUsedAsCollateralEnabled(
-    address indexed reserve,
-    address indexed user
-);
-```
-
-
-#### `ReserveDataUpdated`
-
-Triggered in: `ReserveLogic.sol (updateInterestRatesAndVirtualBalance)`
-
-```solidity
-event ReserveDataUpdated(
-    address indexed reserve,
-    uint256 liquidityRate,
-    uint256 stableBorrowRate,
-    uint256 variableBorrowRate,
-    uint256 liquidityIndex,
-    uint256 variableBorrowIndex
-);
-```	
-
-
-[Example transaction](https://polygonscan.com/tx/0xc968c68100094e7c5e579ca0c83afdc737aa021717cc456529e1170ffc77acbe#eventlog)
+[Events in example transaction](https://polygonscan.com/tx/0xc968c68100094e7c5e579ca0c83afdc737aa021717cc456529e1170ffc77acbe#eventlog)
 
 ### Network-specific considerations
 
@@ -195,7 +216,7 @@ None
 
 
 
-## withdraw
+## `withdraw`
 
 ### Function definition
 
