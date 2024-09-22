@@ -248,46 +248,66 @@ Pool.sol (withdraw)
         -> ReserveLogic.sol (updateState)
         -> ValidationLogic.sol (validateWithdraw)
         -> ReserveLogic.sol (updateInterestRatesAndVirtualBalance)
+        -> UserConfiguration.sol (isUsingAsCollateral)
+        If isUsingAsCollateral is true and user withdraws their entire balance:
+        -> UserConfiguration.sol (setUsingAsCollateral)
         -> AToken.sol (burn)
             -> ScaledBalanceTokenBase.sol (_burnScaled)
-        If the user withdraws all their balance and the asset was used as collateral:
-        -> UserConfiguration.sol (setUsingAsCollateral)
         If the user has any borrows:
         -> ValidationLogic.sol (validateHFAndLtv)
+            -> GenericLogic.sol (calculateUserAccountData)
 ```
 
 ### Execution steps
 
-* Get reserves data associated with the asset to be withdrawn (params.asset).
+* Get reserves data associated with the asset to be withdrawn (`params.asset`).
+* Confirm that the recipient (`to` argument) is not the same as the aToken address.
 * Update the reserve data, including liquidity cumulative index and the variable borrow index, and accrue interest to treasury. Skipped if it was already updated within the same block.
-* If the amount parameter is set to type(uint256).max, set amountToWithdraw to the user's entire aToken balance.
-* Confirm that the amountToWithdraw is not 0.
+* If the amount parameter is set to `type(uint256).max`, set amount to withdraw to the user's entire aToken balance.
+* Confirm that the amount to withdraw is not 0.
+* Confirm that the user has enough aTokenbalance to withdraw the requested amount.
 * Confirm that the reserve is active.
 * Confirm that the reserve is not paused.
-* Confirm that the user has enough balance to withdraw the requested amount.
 * Update the reserve's interest rates based on the new utilization after withdrawal.
 * Burn the corresponding amount of aTokens from the user.
+* Transfer the underlying asset from the aToken contract to the recipient (`to` argument), if the recipient does not equal the aToken address.
 * If the user withdraws their entire balance and the asset was used as collateral, update the user's configuration to reflect that the asset is no longer used as collateral.
 * If the user has any outstanding borrows, validate that the health factor remains above 1 after the withdrawal.
-* Transfer the underlying asset from the aToken contract to the recipient (to address).
+
 
 ### Revert conditions
 
+`SupplyLogic.executeWithdraw`:
+* If the recipient (`to` argument) is the same as the aToken address (reverts with Errors.WITHDRAW_TO_ATOKEN -> error code 93)
+
 `ValidationLogic.validateWithdraw`:
 * If the amount is 0 (reverts with Errors.INVALID_AMOUNT -> error code 26)
-* If the user doesn't have enough balance (reverts with Errors.NOT_ENOUGH_AVAILABLE_USER_BALANCE -> error code 30)
+* If the user doesn't have enough balance (reverts with Errors.NOT_ENOUGH_AVAILABLE_USER_BALANCE -> error code 32)
 * If the reserve is not active (reverts with Errors.RESERVE_INACTIVE -> error code 27)
 * If the reserve is paused (reverts with Errors.RESERVE_PAUSED -> error code 29)
 
-`SupplyLogic.executeWithdraw`:
-* If the recipient (to address) is the same as the aToken address (reverts with Errors.WITHDRAW_TO_ATOKEN -> error code 93)
-
 `ValidationLogic.validateHFAndLtv`:
-* If the withdrawal would cause the user's health factor to drop below 1 (reverts with Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD -> error code 42)
+* If the withdrawal would cause the user's health factor to drop below 1 (reverts with Errors.HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD -> error code 35)
+
 
 ### Emitted events
 
 The following events are emitted, listed in the order of occurrence:
+
+#### `ReserveDataUpdated`
+
+Triggered in: `ReserveLogic.sol (updateInterestRatesAndVirtualBalance)`
+
+```solidity
+event ReserveDataUpdated(
+    address indexed reserve,
+    uint256 liquidityRate,
+    uint256 stableBorrowRate,
+    uint256 variableBorrowRate,
+    uint256 liquidityIndex,
+    uint256 variableBorrowIndex
+);
+```
 
 #### `ReserveUsedAsCollateralDisabled`
 
@@ -302,19 +322,6 @@ event ReserveUsedAsCollateralDisabled(
 );
 ```
 
-#### `Burn`
-
-Triggered in: `ScaledBalanceTokenBase.sol (_burnScaled)`
-
-```solidity
-event Burn(
-    address indexed caller,
-    address indexed onBehalfOf,
-    uint256 amount,
-    uint256 index
-);
-```
-
 #### `Transfer`
 
 Triggered in: `ScaledBalanceTokenBase.sol (_burnScaled)`
@@ -324,6 +331,36 @@ event Transfer(
     address indexed from,
     address indexed to,
     uint256 value
+);
+```
+
+#### `Mint`
+
+Trigger condition: In some instances, a burn transaction will emit a `Mint` event if the amount to burn is less than the interest that the user accrued (see comment in `ScaledBalanceTokenBase.sol (_burnScaled)`).
+
+Triggered in: `ScaledBalanceTokenBase.sol (_burnScaled)`
+
+```solidity
+event Mint(
+    address indexed caller,
+    address indexed onBehalfOf,
+    uint256 value,
+    uint256 balanceIncrease,
+    uint256 index
+);
+```
+
+#### `Burn`
+
+Triggered in: `ScaledBalanceTokenBase.sol (_burnScaled)`
+
+```solidity
+event Burn(
+    address indexed from,
+    address indexed target,
+    uint256 value,
+    uint256 balanceIncrease,
+    uint256 index
 );
 ```
 
@@ -341,20 +378,7 @@ event Withdraw(
 );
 ```
 
-#### `ReserveDataUpdated`
 
-Triggered in: `ReserveLogic.sol (updateInterestRatesAndVirtualBalance)`
-
-```solidity
-event ReserveDataUpdated(
-    address indexed reserve,
-    uint256 liquidityRate,
-    uint256 stableBorrowRate,
-    uint256 variableBorrowRate,
-    uint256 liquidityIndex,
-    uint256 variableBorrowIndex
-);
-```
 
 #### `Example transaction`
 
