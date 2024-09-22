@@ -4,15 +4,17 @@
 
 The [Pool contract](https://github.com/aave-dao/aave-v3-origin/blob/main/src/core/contracts/protocol/pool/Pool.sol) is the main entry point for interacting with the Aave V3.1 protocol. It implements the core lending and borrowing functionality, including:
 * [supply](#supply)
+* [withdraw](#withdraw)
 * borrow (TODO)
 * repay (TODO)
-* withdraw (TODO)
 * liquidationCall (TODO)
 * flashLoan (TODO)
 
+
 ## Links
-* Contracts: https://github.com/aave-dao/aave-v3-origin
+* Contracts (V3.1): https://github.com/aave-dao/aave-v3-origin
 * Developer docs: https://docs.aave.com/developers
+
 
 ## Key terminology
 
@@ -373,17 +375,12 @@ event Withdraw(
     address indexed reserve,
     address indexed user,
     address indexed to,
-    uint256 amount,
-    uint256 index
+    uint256 amount
 );
 ```
 
+[Events in example transaction](https://polygonscan.com/tx/0x746d50fcfc5d80549f09dd0267eb1ad3076f28c06abb78c4ac7bebf03dae6918#eventlog)
 
-
-#### `Example transaction`
-
-[Example transaction](https://polygonscan.com/tx/0x746d50fcfc5d80549f09dd0267eb1ad3076f28c06abb78c4ac7bebf03dae6918#eventlog)
-
-#### `Network-specific considerations`
+### Network-specific considerations
 
 None
