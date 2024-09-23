@@ -145,7 +145,7 @@ event Transfer(
 );
 ```
 
-### `Approval`
+#### `Approval`
 
 Triggered in: `ERC20.sol of supplied asset (safeTransferFrom)`
 
@@ -210,7 +210,7 @@ event Supply(
 );
 ```
 
-[Events in example transaction](https://polygonscan.com/tx/0xc968c68100094e7c5e579ca0c83afdc737aa021717cc456529e1170ffc77acbe#eventlog)
+* [Example transaction](https://polygonscan.com/tx/0xc968c68100094e7c5e579ca0c83afdc737aa021717cc456529e1170ffc77acbe#eventlog) including `ReserveUsedAsCollateralEnabled` event.
 
 ### Network-specific considerations
 
@@ -267,13 +267,12 @@ Pool.sol (withdraw)
 * Update the reserve data, including liquidity cumulative index and the variable borrow index, and accrue interest to treasury. Skipped if it was already updated within the same block.
 * If the amount parameter is set to `type(uint256).max`, set amount to withdraw to the user's entire aToken balance.
 * Confirm that the amount to withdraw is not 0.
-* Confirm that the user has enough aTokenbalance to withdraw the requested amount.
+* Confirm that the user has enough aToken balance to withdraw the requested amount.
 * Confirm that the reserve is active.
 * Confirm that the reserve is not paused.
 * Update the reserve's interest rates based on the new utilization after withdrawal.
-* Burn the corresponding amount of aTokens from the user.
-* Transfer the underlying asset from the aToken contract to the recipient (`to` argument), if the recipient does not equal the aToken address.
 * If the user withdraws their entire balance and the asset was used as collateral, update the user's configuration to reflect that the asset is no longer used as collateral.
+* Burn the corresponding amount of aTokens from the `msg.sender` and transfer the underlying asset from the aToken contract to the recipient (`to` argument), if the recipient does not equal the aToken address.
 * If the user has any outstanding borrows, validate that the health factor remains above 1 after the withdrawal.
 
 
@@ -379,7 +378,8 @@ event Withdraw(
 );
 ```
 
-[Events in example transaction](https://polygonscan.com/tx/0x746d50fcfc5d80549f09dd0267eb1ad3076f28c06abb78c4ac7bebf03dae6918#eventlog)
+* [Example transaction](https://polygonscan.com/tx/0x746d50fcfc5d80549f09dd0267eb1ad3076f28c06abb78c4ac7bebf03dae6918#eventlog) excluding `ReserveUsedAsCollateralDisabled` and `Mint` events.
+* [Example transaction](https://polygonscan.com/tx/0x080ed836e06c75a375a9bf64d521a6572e423657a414e58ec1ac5694fab73eb8#eventlog) including `ReserveUsedAsCollateralDisabled` event, excluding `Mint` event.
 
 ### Network-specific considerations
 
