@@ -25,6 +25,9 @@ The [Pool contract](https://github.com/aave-dao/aave-v3-origin/blob/main/src/cor
 ### Paused reserve
 - Does not allow any protocol interaction for the asset being supplied, including supply, borrow, repay, withdraw, rate switch (variable/stable), liquidation, and aToken transfer.
 
+### Inactive reserve
+- The asset to be supplied is not supported by the protocol.
+
 ### Enabled as collateral
 - Enabling a supplied asset as collateral means that the asset can be used as collateral for borrowing.
 
