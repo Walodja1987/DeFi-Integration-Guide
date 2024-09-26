@@ -2,7 +2,22 @@
 
 >👷 This document is a work in progress. Please feel free to contribute to it by opening a pull request (ensure to follow our [CONTRIBUTION guidelines](CONTRIBUTING.md)).
 
-The [Pool contract](https://github.com/aave-dao/aave-v3-origin/blob/main/src/core/contracts/protocol/pool/Pool.sol) is the main entry point for interacting with the Aave V3.1 protocol. It implements the core lending and borrowing functionality, including:
+## Overview
+
+Aave V3.1 is a decentralized lending protocol that allows users to:
+
+1. Supply digital assets to earn interest
+2. Post these assets as collateral
+3. Borrow other assets against their collateral
+
+The protocol automatically manages interest rates based on supply and demand. It includes safety features like liquidations to ensure the system remains solvent.
+
+## Main entry contract
+
+* [Pool contract](https://github.com/aave-dao/aave-v3-origin/blob/main/src/core/contracts/protocol/pool/Pool.sol)
+
+## Core functions
+
 * [supply](#supply)
 * [withdraw](#withdraw)
 * borrow (TODO)
@@ -10,11 +25,14 @@ The [Pool contract](https://github.com/aave-dao/aave-v3-origin/blob/main/src/cor
 * liquidationCall (TODO)
 * flashLoan (TODO)
 
+## Solidity version
+`^0.8.10`
 
 ## Links
-* Contracts (V3.1): https://github.com/aave-dao/aave-v3-origin
+* Codebase (V3.1): https://github.com/aave-dao/aave-v3-origin
 * Developer docs: https://docs.aave.com/developers
-
+* Contract addresses: https://docs.aave.com/developers/deployed-contracts/deployed-contracts
+* ABIs: https://docs.aave.com/developers/deployed-contracts/deployed-contracts
 
 ## Key terminology
 
@@ -219,7 +237,9 @@ event Supply(
 
 None
 
+### Security considerations
 
+None
 
 ## `withdraw`
 
@@ -385,5 +405,9 @@ event Withdraw(
 * [Example transaction](https://polygonscan.com/tx/0x080ed836e06c75a375a9bf64d521a6572e423657a414e58ec1ac5694fab73eb8#eventlog) including `ReserveUsedAsCollateralDisabled` event, excluding `Mint` event.
 
 ### Network-specific considerations
+
+None
+
+### Security considerations
 
 None
