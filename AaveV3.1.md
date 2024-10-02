@@ -170,6 +170,8 @@ event Transfer(
 
 Triggered in: `ERC20.sol of supplied asset (safeTransferFrom)`
 
+Note that for some tokens such as USDT on Ethereum, the `Approval` event may not be emitted.
+
 ```solidity
 event Approval(
     address indexed owner,
@@ -303,6 +305,7 @@ Pool.sol (withdraw)
 
 `SupplyLogic.executeWithdraw`:
 * If the recipient (`to` argument) is the same as the aToken address (reverts with Errors.WITHDRAW_TO_ATOKEN -> error code 93)
+* If `asset` is the zero address, the function fails silently when trying to call `scaledBalanceOf` on a non-existent aToken contract.
 
 `ValidationLogic.validateWithdraw`:
 * If the amount is 0 (reverts with Errors.INVALID_AMOUNT -> error code 26)
