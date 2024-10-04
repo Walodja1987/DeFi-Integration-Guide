@@ -45,42 +45,42 @@ These features collectively contribute to a more flexible, efficient, and user-c
 ## Key Terminology
 Key terminology in Morpho Blue:
 
-Market
-* A lending pool defined by a set of parameters (MarketParams) including loan token, collateral token, oracle, interest rate model (IRM), and loan-to-value ratio (LLTV).
+### Market
+* A lending pool defined by a set of parameters (`MarketParams`) including loan token, collateral token, oracle, interest rate model (IRM), and loan-to-value ratio (LLTV).
 * Each market has a unique identifier (Id).
 
-Position
+### Position
 * Represents a user's assets in a specific market, including supply shares, borrow shares, and collateral amount.
 
-Supply Shares
+### Supply Shares
 * Represents a user's share of the total supplied assets in a market.
 * Used to calculate the amount of assets a user can withdraw.
 
-Borrow Shares
+### Borrow Shares
 * Represents a user's share of the total borrowed assets in a market.
 * Used to calculate the amount of debt a user owes.
 
-Collateral
+### Collateral
 * Assets deposited by a user to secure their borrowed position.
 * Cannot be borrowed by others and doesn't earn interest.
 
-Loan-to-Value Ratio (LLTV)
+### Loan-to-Value Ratio (LLTV)
 * The maximum amount a user can borrow relative to their collateral value.
 
-Interest Rate Model (IRM)
+### Interest Rate Model (IRM)
 * Determines the borrow rate for a market.
 * Can be customized for each market.
 
-Oracle
+### Oracle
 * Provides price data for collateral assets.
 
-Authorization
+### Authorization
 * Mechanism allowing users to delegate control of their positions to other addresses.
 
-Health Factor
+### Health Factor
 * A measure of the safety of a user's position, based on the ratio of collateral value to borrowed value.
 
-Liquidation
+### Liquidation
 * Process triggered when a borrower's position becomes unhealthy.
 * Allows liquidators to repay part of the debt in exchange for collateral.
 
@@ -137,7 +137,10 @@ The naming of these functions is quite similar, so let's first discuss the diffe
 
 
 
-## ```createMarket```
+## `createMarket`
+
+### Function definition
+
 ```solidity
     /// @notice Creates the market `marketParams`.
     /// @dev Here is the list of assumptions on the market's dependencies (tokens, IRM and oracle) that guarantees
@@ -174,13 +177,26 @@ The naming of these functions is quite similar, so let's first discuss the diffe
     uint256 lltv;
 }
 ```
+[Source][https://github.com/morpho-org/morpho-blue/blob/fcb190b0e0e1355defe56b19781ac573986c3f74/src/interfaces/IMorpho.sol#L129]
 
-[Source][https://github.com/morpho-org/morpho-blue/blob/main/src/Morpho.sol]
-
-## Execution Path
+### Execution path
 
 ```
 Morpho.sol (createMarket)
    If IRM is stateful initiate it
       -> IIRM.sol (borrowRate())
 ```
+
+### Execution steps
+
+* Generate the market `id` from `MarketParams`.
+* Check if the IRM is enabled.
+* Check if the LLTV is enabled.
+* Check if the market already exists.
+* Create the market.
+
+### Revert conditions
+
+* Interest rate model (IRM) ist not enabled. Reverts with `IRM not enabled`.
+* The LLTV is not enabled. Reverts with `LLTV not enabled`.
+* A market with the same `id` already exists. Reverts with `market already created`.
